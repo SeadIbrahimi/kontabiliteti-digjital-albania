@@ -1,51 +1,44 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
+import { LogOut, User } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { LogOut, User, FileText } from 'lucide-react';
+import NotificationBell from './NotificationBell';
 
 const Header: React.FC = () => {
   const { user, logout } = useAuth();
 
   return (
-    <header className="bg-white border-b border-gray-200 px-4 py-3">
-      <div className="flex items-center justify-between max-w-7xl mx-auto">
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2">
-            <div className="p-2 bg-blue-600 rounded-lg">
-              <FileText className="h-6 w-6 text-white" />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-gray-900">
-                Sistemi i Kontabilitetit
-              </h1>
-              <p className="text-sm text-gray-500">
-                {user?.role === 'admin' ? 'Panel Administrimi' : 'Panel Klienti'}
-              </p>
-            </div>
-          </div>
-        </div>
-        
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
-            <User className="h-4 w-4 text-gray-600" />
-            <div className="text-right">
-              <p className="text-sm font-medium text-gray-900">{user?.name}</p>
-              {user?.businessName && (
-                <p className="text-xs text-gray-500">{user.businessName}</p>
-              )}
-            </div>
+    <header className="bg-white shadow-sm border-b">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-16">
+          <div className="flex items-center">
+            <h1 className="text-xl font-bold text-gray-900">
+              Kontabiliteti Digjital
+            </h1>
           </div>
           
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={logout}
-            className="flex items-center gap-2"
-          >
-            <LogOut className="h-4 w-4" />
-            Dil
-          </Button>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 text-sm text-gray-600">
+              <User className="h-4 w-4" />
+              <span>{user?.name}</span>
+              <span className="text-xs bg-gray-100 px-2 py-1 rounded">
+                {user?.role === 'admin' ? 'Kontabilist' : 'Klient'}
+              </span>
+            </div>
+            
+            {user?.role === 'client' && <NotificationBell />}
+            
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={logout}
+              className="text-gray-600 hover:text-gray-900"
+            >
+              <LogOut className="h-4 w-4 mr-2" />
+              Dil
+            </Button>
+          </div>
         </div>
       </div>
     </header>

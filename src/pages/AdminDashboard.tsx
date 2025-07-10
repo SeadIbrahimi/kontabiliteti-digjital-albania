@@ -1,12 +1,13 @@
-
 import React, { useState } from 'react';
 import Header from '@/components/Header';
 import DocumentList from '@/components/DocumentList';
+import DocumentManagement from '@/components/DocumentManagement';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Users, FileText, Calendar, TrendingUp, Eye, Search, X } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Users, FileText, Calendar, TrendingUp, Eye, Search, X, Settings } from 'lucide-react';
 import { Document } from '@/types/document';
 
 const AdminDashboard: React.FC = () => {
@@ -20,7 +21,7 @@ const AdminDashboard: React.FC = () => {
   ];
 
   // Mock documents for demo
-  const allDocuments: Document[] = [
+  const [allDocuments, setAllDocuments] = useState<Document[]>([
     {
       id: '1',
       clientId: '2',
@@ -51,7 +52,7 @@ const AdminDashboard: React.FC = () => {
       fileSize: 1536000,
       fileType: 'application/pdf',
     },
-  ];
+  ]);
 
   const stats = {
     totalClients: clients.length,
@@ -76,6 +77,11 @@ const AdminDashboard: React.FC = () => {
 
   const clearSearch = () => {
     setSearchTerm('');
+  };
+
+  const handleDocumentProcessed = (documentId: string) => {
+    // Këtu mund të përditësosh state-in nëse nevojitet
+    console.log('Document processed:', documentId);
   };
 
   return (
@@ -134,107 +140,136 @@ const AdminDashboard: React.FC = () => {
           </Card>
         </div>
 
-        {/* Client List */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Users className="h-5 w-5" />
-              Lista e Klientëve
-            </CardTitle>
-            <CardDescription>
-              Kliko në një klient për të parë dokumentet e tij
-            </CardDescription>
-            
-            {/* Search Input */}
-            <div className="relative">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <Input
-                  type="text"
-                  placeholder="Kërko sipas emrit të biznesit ose pronarit..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 pr-10"
-                />
-                {searchTerm && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={clearSearch}
-                    className="absolute right-1 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0 hover:bg-gray-100"
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                )}
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <Card 
-                className={`cursor-pointer transition-colors hover:bg-gray-50 ${
-                  selectedClientId === null ? 'ring-2 ring-blue-500' : ''
-                }`}
-                onClick={() => setSelectedClientId(null)}
-              >
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="font-medium">Të gjithë klientët</h3>
-                      <p className="text-sm text-gray-600">Shfaq të gjitha dokumentet</p>
-                    </div>
-                    <Badge variant="secondary">
-                      {allDocuments.length}
-                    </Badge>
+        <Tabs defaultValue="clients" className="w-full">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="clients" className="flex items-center gap-2">
+              <Users className="h-4 w-4" />
+              Klientët
+            </TabsTrigger>
+            <TabsTrigger value="documents" className="flex items-center gap-2">
+              <FileText className="h-4 w-4" />
+              Dokumentet
+            </TabsTrigger>
+            <TabsTrigger value="management" className="flex items-center gap-2">
+              <Settings className="h-4 w-4" />
+              Menaxhimi
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="clients" className="space-y-6">
+            {/* Client List */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Users className="h-5 w-5" />
+                  Lista e Klientëve
+                </CardTitle>
+                <CardDescription>
+                  Kliko në një klient për të parë dokumentet e tij
+                </CardDescription>
+                
+                {/* Search Input */}
+                <div className="relative">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    <Input
+                      type="text"
+                      placeholder="Kërko sipas emrit të biznesit ose pronarit..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-10 pr-10"
+                    />
+                    {searchTerm && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={clearSearch}
+                        className="absolute right-1 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0 hover:bg-gray-100"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    )}
                   </div>
-                </CardContent>
-              </Card>
-
-              {filteredClients.length > 0 ? (
-                filteredClients.map(client => {
-                  const clientDocs = allDocuments.filter(doc => doc.clientId === client.id);
-                  return (
-                    <Card 
-                      key={client.id}
-                      className={`cursor-pointer transition-colors hover:bg-gray-50 ${
-                        selectedClientId === client.id ? 'ring-2 ring-blue-500' : ''
-                      }`}
-                      onClick={() => setSelectedClientId(client.id)}
-                    >
-                      <CardContent className="p-4">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <h3 className="font-medium">{client.name}</h3>
-                            <p className="text-sm text-gray-600">{client.businessName}</p>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Badge variant="secondary">
-                              {clientDocs.length}
-                            </Badge>
-                            <Eye className="h-4 w-4 text-gray-400" />
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  );
-                })
-              ) : searchTerm ? (
-                <div className="col-span-full text-center py-8">
-                  <p className="text-gray-500">Nuk u gjetën klientë që përputhen me kërkimin tuaj.</p>
                 </div>
-              ) : null}
-            </div>
-          </CardContent>
-        </Card>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <Card 
+                    className={`cursor-pointer transition-colors hover:bg-gray-50 ${
+                      selectedClientId === null ? 'ring-2 ring-blue-500' : ''
+                    }`}
+                    onClick={() => setSelectedClientId(null)}
+                  >
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h3 className="font-medium">Të gjithë klientët</h3>
+                          <p className="text-sm text-gray-600">Shfaq të gjitha dokumentet</p>
+                        </div>
+                        <Badge variant="secondary">
+                          {allDocuments.length}
+                        </Badge>
+                      </div>
+                    </CardContent>
+                  </Card>
 
-        {/* Documents */}
-        <div>
-          <DocumentList 
-            documents={documentsToShow} 
-            showClientFilter={selectedClientId === null}
-            clients={clients}
-          />
-        </div>
+                  {filteredClients.length > 0 ? (
+                    filteredClients.map(client => {
+                      const clientDocs = allDocuments.filter(doc => doc.clientId === client.id);
+                      return (
+                        <Card 
+                          key={client.id}
+                          className={`cursor-pointer transition-colors hover:bg-gray-50 ${
+                            selectedClientId === client.id ? 'ring-2 ring-blue-500' : ''
+                          }`}
+                          onClick={() => setSelectedClientId(client.id)}
+                        >
+                          <CardContent className="p-4">
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <h3 className="font-medium">{client.name}</h3>
+                                <p className="text-sm text-gray-600">{client.businessName}</p>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Badge variant="secondary">
+                                  {clientDocs.length}
+                                </Badge>
+                                <Eye className="h-4 w-4 text-gray-400" />
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      );
+                    })
+                  ) : searchTerm ? (
+                    <div className="col-span-full text-center py-8">
+                      <p className="text-gray-500">Nuk u gjetën klientë që përputhen me kërkimin tuaj.</p>
+                    </div>
+                  ) : null}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="documents" className="space-y-6">
+            {/* Documents */}
+            <div>
+              <DocumentList 
+                documents={documentsToShow} 
+                showClientFilter={selectedClientId === null}
+                clients={clients}
+              />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="management" className="space-y-6">
+            <DocumentManagement 
+              documents={allDocuments}
+              clients={clients}
+              onDocumentProcessed={handleDocumentProcessed}
+            />
+          </TabsContent>
+        </Tabs>
       </main>
     </div>
   );

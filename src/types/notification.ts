@@ -1,5 +1,5 @@
 
-export interface Notification {
+export interface AppNotification {
   id: string;
   clientId: string;
   type: 'document_processed' | 'deadline_reminder';

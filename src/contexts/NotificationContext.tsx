@@ -1,12 +1,12 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { Notification, DeadlineType, defaultDeadlines } from '@/types/notification';
+import { AppNotification, DeadlineType, defaultDeadlines } from '@/types/notification';
 import { useAuth } from './AuthContext';
 
 interface NotificationContextType {
-  notifications: Notification[];
+  notifications: AppNotification[];
   unreadCount: number;
-  addNotification: (notification: Omit<Notification, 'id' | 'createdAt'>) => void;
+  addNotification: (notification: Omit<AppNotification, 'id' | 'createdAt'>) => void;
   markAsRead: (notificationId: string) => void;
   markAllAsRead: () => void;
   checkDeadlines: () => void;
@@ -29,7 +29,7 @@ interface NotificationProviderProps {
 
 export const NotificationProvider: React.FC<NotificationProviderProps> = ({ children }) => {
   const { user } = useAuth();
-  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [notifications, setNotifications] = useState<AppNotification[]>([]);
 
   const unreadCount = notifications.filter(n => !n.isRead).length;
 
@@ -61,8 +61,8 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
     }
   };
 
-  const addNotification = (notification: Omit<Notification, 'id' | 'createdAt'>) => {
-    const newNotification: Notification = {
+  const addNotification = (notification: Omit<AppNotification, 'id' | 'createdAt'>) => {
+    const newNotification: AppNotification = {
       ...notification,
       id: Math.random().toString(36).substr(2, 9),
       createdAt: new Date(),

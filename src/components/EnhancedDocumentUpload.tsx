@@ -1,20 +1,27 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from '@/hooks/use-toast';
 import { Upload, FileText, X } from 'lucide-react';
-import { DocumentCategory, categoryLabels } from '@/types/document';
+import { DocumentCategory, PaymentStatus, PaymentMethod, categoryLabels, paymentStatusLabels, paymentMethodLabels } from '@/types/document';
 
-interface DocumentUploadProps {
-  onUpload: (files: File[], category: DocumentCategory) => void;
+interface EnhancedDocumentUploadProps {
+  onUpload: (files: File[], category: DocumentCategory, paymentStatus?: PaymentStatus, paymentMethod?: PaymentMethod) => void;
 }
 
-const DocumentUpload: React.FC<DocumentUploadProps> = ({ onUpload }) => {
+const EnhancedDocumentUpload: React.FC<EnhancedDocumentUploadProps> = ({ onUpload }) => {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<DocumentCategory>('shpenzime');
+  const [selectedPaymentStatus, setSelectedPaymentStatus] = useState<PaymentStatus | ''>('');
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<PaymentMethod | ''>('');
   const [isDragging, setIsDragging] = useState(false);
+
+  // Categories that require payment status
+  const categoriesWithPayment: DocumentCategory[] = ['shpenzime', 'blerje', 'import', 'export'];
+  
+  const showPaymentStatus = categoriesWithPayment.includes(selectedCategory);
+  const showPaymentMethod = showPaymentStatus && selectedPaymentStatus === 'paguar';
 
   const handleFileSelect = (files: FileList | null) => {
     if (!files) return;
@@ -67,6 +74,13 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ onUpload }) => {
     setSelectedFiles(prev => prev.filter((_, i) => i !== index));
   };
 
+  const handleCategoryChange = (category: DocumentCategory) => {
+    setSelectedCategory(category);
+    // Reset payment fields when changing category
+    setSelectedPaymentStatus('');
+    setSelectedPaymentMethod('');
+  };
+
   const handleUpload = () => {
     if (selectedFiles.length === 0) {
       toast({
@@ -77,8 +91,36 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ onUpload }) => {
       return;
     }
 
-    onUpload(selectedFiles, selectedCategory);
+    // Validate payment status for required categories
+    if (showPaymentStatus && !selectedPaymentStatus) {
+      toast({
+        title: "Statusi i pagesës i kërkuar",
+        description: "Ju lutem zgjidhni statusin e pagesës për këtë kategori",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate payment method when status is 'paguar'
+    if (showPaymentMethod && !selectedPaymentMethod) {
+      toast({
+        title: "Mënyra e pagesës e kërkuar",
+        description: "Ju lutem zgjidhni mënyrën e pagesës",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    onUpload(
+      selectedFiles, 
+      selectedCategory,
+      selectedPaymentStatus || undefined,
+      selectedPaymentMethod || undefined
+    );
+    
     setSelectedFiles([]);
+    setSelectedPaymentStatus('');
+    setSelectedPaymentMethod('');
     
     toast({
       title: "Ngarkimi i suksesshëm",
@@ -98,9 +140,10 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ onUpload }) => {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
+        {/* Category Selection */}
         <div>
           <label className="text-sm font-medium mb-2 block">Kategoria</label>
-          <Select value={selectedCategory} onValueChange={(value: DocumentCategory) => setSelectedCategory(value)}>
+          <Select value={selectedCategory} onValueChange={handleCategoryChange}>
             <SelectTrigger>
               <SelectValue />
             </SelectTrigger>
@@ -112,6 +155,41 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ onUpload }) => {
           </Select>
         </div>
 
+        {/* Payment Status Selection */}
+        {showPaymentStatus && (
+          <div>
+            <label className="text-sm font-medium mb-2 block">Statusi i Pagesës</label>
+            <Select value={selectedPaymentStatus} onValueChange={(value: PaymentStatus) => setSelectedPaymentStatus(value)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Zgjidh statusin e pagesës" />
+              </SelectTrigger>
+              <SelectContent>
+                {Object.entries(paymentStatusLabels).map(([key, label]) => (
+                  <SelectItem key={key} value={key}>{label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
+
+        {/* Payment Method Selection */}
+        {showPaymentMethod && (
+          <div>
+            <label className="text-sm font-medium mb-2 block">Mënyra e Pagesës</label>
+            <Select value={selectedPaymentMethod} onValueChange={(value: PaymentMethod) => setSelectedPaymentMethod(value)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Zgjidh mënyrën e pagesës" />
+              </SelectTrigger>
+              <SelectContent>
+                {Object.entries(paymentMethodLabels).map(([key, label]) => (
+                  <SelectItem key={key} value={key}>{label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
+
+        {/* File Upload Area */}
         <div
           className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
             isDragging ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-gray-400'
@@ -142,6 +220,7 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ onUpload }) => {
           </p>
         </div>
 
+        {/* Selected Files */}
         {selectedFiles.length > 0 && (
           <div className="space-y-2">
             <h4 className="text-sm font-medium">Skedarët e zgjedhur:</h4>
@@ -175,4 +254,4 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ onUpload }) => {
   );
 };
 
-export default DocumentUpload;
+export default EnhancedDocumentUpload;

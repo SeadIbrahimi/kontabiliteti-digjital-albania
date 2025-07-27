@@ -20,6 +20,7 @@ const ClientDashboard: React.FC = () => {
       uploadDate: new Date(),
       fileSize: file.size,
       fileType: file.type,
+      status: 'uploaded',
     }));
 
     setDocuments(prev => [...prev, ...newDocuments]);

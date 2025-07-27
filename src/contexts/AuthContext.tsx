@@ -1,7 +1,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
-export type UserRole = 'admin' | 'client';
+export type UserRole = 'admin' | 'employee' | 'client';
 
 export interface User {
   id: string;
@@ -9,6 +9,7 @@ export interface User {
   role: UserRole;
   name: string;
   businessName?: string;
+  assignedClients?: string[]; // For employees - list of client IDs they manage
 }
 
 interface AuthContextType {
@@ -41,6 +42,20 @@ const mockUsers: User[] = [
     role: 'client',
     name: 'Fatmira Krasniqi',
     businessName: 'XYZ L.L.C.'
+  },
+  {
+    id: '4',
+    username: 'employee1',
+    role: 'employee',
+    name: 'Besarta Morina',
+    assignedClients: ['2']
+  },
+  {
+    id: '5',
+    username: 'employee2',
+    role: 'employee',
+    name: 'Driton Hoxha',
+    assignedClients: ['3']
   }
 ];
 

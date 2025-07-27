@@ -2,17 +2,50 @@ import React, { useState } from 'react';
 import Header from '@/components/Header';
 import DocumentList from '@/components/DocumentList';
 import DocumentManagement from '@/components/DocumentManagement';
+import EmployeeManagement from '@/components/EmployeeManagement';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Users, FileText, Calendar, TrendingUp, Eye, Search, X, Settings } from 'lucide-react';
+import { Users, FileText, Calendar, TrendingUp, Eye, Search, X, Settings, UserCog } from 'lucide-react';
 import { Document } from '@/types/document';
+import { Employee } from '@/types/employee';
 
 const AdminDashboard: React.FC = () => {
   const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState<string>('');
+  const [employees, setEmployees] = useState<Employee[]>([
+    {
+      id: '4',
+      name: 'Besarta Morina',
+      username: 'employee1',
+      email: 'besarta@example.com',
+      phone: '+383 44 123 456',
+      assignedClients: ['2'],
+      createdAt: new Date('2024-01-15'),
+      isActive: true,
+      performance: {
+        documentsProcessed: 45,
+        averageProcessingTime: 2.5,
+        clientSatisfactionScore: 4.8
+      }
+    },
+    {
+      id: '5',
+      name: 'Driton Hoxha',
+      username: 'employee2',
+      email: 'driton@example.com',
+      assignedClients: ['3'],
+      createdAt: new Date('2024-02-01'),
+      isActive: true,
+      performance: {
+        documentsProcessed: 32,
+        averageProcessingTime: 3.1,
+        clientSatisfactionScore: 4.6
+      }
+    }
+  ]);
   
   // Mock data for demo
   const clients = [
@@ -27,7 +60,8 @@ const AdminDashboard: React.FC = () => {
       clientId: '2',
       fileName: 'fatura-tvsh-mars-2024.pdf',
       fileUrl: '',
-      category: 'tvsh',
+      category: 'shpenzime',
+      status: 'uploaded',
       uploadDate: new Date('2024-03-15'),
       fileSize: 1024000,
       fileType: 'application/pdf',
@@ -41,6 +75,7 @@ const AdminDashboard: React.FC = () => {
       uploadDate: new Date('2024-03-10'),
       fileSize: 2048000,
       fileType: 'image/jpeg',
+      status: 'uploaded',
     },
     {
       id: '3',
@@ -51,6 +86,7 @@ const AdminDashboard: React.FC = () => {
       uploadDate: new Date('2024-02-28'),
       fileSize: 1536000,
       fileType: 'application/pdf',
+      status: 'uploaded',
     },
   ]);
 
@@ -82,6 +118,32 @@ const AdminDashboard: React.FC = () => {
   const handleDocumentProcessed = (documentId: string) => {
     // Këtu mund të përditësosh state-in nëse nevojitet
     console.log('Document processed:', documentId);
+  };
+
+  // Employee management functions
+  const handleEmployeeAdd = (employee: Omit<Employee, 'id' | 'createdAt'>) => {
+    const newEmployee: Employee = {
+      ...employee,
+      id: Math.random().toString(36).substr(2, 9),
+      createdAt: new Date(),
+    };
+    setEmployees(prev => [...prev, newEmployee]);
+  };
+
+  const handleEmployeeUpdate = (id: string, updates: Partial<Employee>) => {
+    setEmployees(prev => prev.map(emp => 
+      emp.id === id ? { ...emp, ...updates } : emp
+    ));
+  };
+
+  const handleEmployeeDelete = (id: string) => {
+    setEmployees(prev => prev.filter(emp => emp.id !== id));
+  };
+
+  const handleClientAssignment = (employeeId: string, clientIds: string[]) => {
+    setEmployees(prev => prev.map(emp => 
+      emp.id === employeeId ? { ...emp, assignedClients: clientIds } : emp
+    ));
   };
 
   return (
@@ -141,7 +203,7 @@ const AdminDashboard: React.FC = () => {
         </div>
 
         <Tabs defaultValue="clients" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="clients" className="flex items-center gap-2">
               <Users className="h-4 w-4" />
               Klientët
@@ -149,6 +211,10 @@ const AdminDashboard: React.FC = () => {
             <TabsTrigger value="documents" className="flex items-center gap-2">
               <FileText className="h-4 w-4" />
               Dokumentet
+            </TabsTrigger>
+            <TabsTrigger value="employees" className="flex items-center gap-2">
+              <UserCog className="h-4 w-4" />
+              Punonjësit
             </TabsTrigger>
             <TabsTrigger value="management" className="flex items-center gap-2">
               <Settings className="h-4 w-4" />
@@ -260,6 +326,17 @@ const AdminDashboard: React.FC = () => {
                 clients={clients}
               />
             </div>
+          </TabsContent>
+
+          <TabsContent value="employees" className="space-y-6">
+            <EmployeeManagement
+              employees={employees}
+              clients={clients}
+              onEmployeeAdd={handleEmployeeAdd}
+              onEmployeeUpdate={handleEmployeeUpdate}
+              onEmployeeDelete={handleEmployeeDelete}
+              onClientAssignment={handleClientAssignment}
+            />
           </TabsContent>
 
           <TabsContent value="management" className="space-y-6">
